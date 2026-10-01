@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f1e8">
+  <title>Playside - Two Player Arcade</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f5f1e8;
+      --ink: #242722;
+      --muted: #73766d;
+      --line: #dcd8cd;
+      --coral: #ee7058;
+      --teal: #277d72;
+      --gold: #e6bc42;
+      --white: #fffdf8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background-color: var(--paper);
+      background-image: radial-gradient(#d9d4c8 0.7px, transparent 0.7px);
+      background-size: 17px 17px;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    .page {
+      display: grid;
+      min-height: 100vh;
+      grid-template-rows: auto 1fr auto;
+      padding: 0 7vw;
+    }
+
+    header, footer {
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 31px;
+      aspect-ratio: 1;
+      place-items: center;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+
+    .header-note, footer { color: var(--muted); font-size: 12px; }
+    main { display: grid; align-content: center; padding: 28px 0 38px; }
+    .arcade { width: min(100%, 980px); margin: 0 auto; }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(42px, 7vw, 68px);
+      line-height: 0.98;
+    }
+
+    .intro {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 29px;
+    }
+
+    .intro-note { margin: 0 0 3px; color: var(--muted); font-size: 14px; }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .game-link {
+      display: grid;
+      min-height: 178px;
+      grid-template-columns: 66px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 15px;
+      padding: 19px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--white);
+      color: inherit;
+      text-decoration: none;
+      transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .game-link:hover {
+      transform: translateY(-3px);
+      border-color: #aaa99d;
+      box-shadow: 0 7px 16px rgba(36, 39, 34, 0.08);
+    }
+
+    .game-link:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+
+    .game-icon {
+      display: grid;
+      width: 66px;
+      aspect-ratio: 1;
+      place-items: center;
+      border-radius: 7px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .icon-xo { background: #f9d8ce; color: #a94431; }
+    .icon-four { background: #cbe9df; color: #176453; }
+    .icon-rps { background: #f2e3ac; color: #806315; font-family: "Trebuchet MS", sans-serif; font-size: 21px; }
+    .icon-nim { background: #d8e3bd; color: #52682c; font-family: "Trebuchet MS", sans-serif; letter-spacing: 2px; }
+    .icon-memory { background: #d9d5ee; color: #4e4a78; }
+    .icon-dots { background: #f1d2d6; color: #9a3d4b; }
+
+    .game-copy { min-width: 0; }
+    .game-number { display: block; margin-bottom: 6px; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; }
+    .game-title { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 21px; line-height: 1.05; }
+    .game-description { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .arrow { color: var(--teal); font-size: 21px; font-weight: 800; }
+
+    footer { min-height: 54px; border-top: 1px solid var(--line); }
+    .footer-mark { color: var(--ink); font-weight: 900; }
+
+    @media (max-width: 840px) {
+      .page { padding-inline: 5vw; }
+      .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .page { padding-inline: 20px; }
+      header { min-height: 60px; }
+      .header-note { font-size: 10px; }
+      main { padding-block: 22px 28px; }
+      .intro { display: block; margin-bottom: 20px; }
+      .intro-note { margin-top: 10px; }
+      .game-grid { grid-template-columns: 1fr; gap: 9px; }
+      .game-link { min-height: 112px; grid-template-columns: 54px minmax(0, 1fr) auto; gap: 13px; padding: 13px; }
+      .game-icon { width: 54px; }
+      .game-title { font-size: 20px; }
+      footer { min-height: 46px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">P</span> Playside Arcade</div>
+      <div class="header-note">Good games. Better rematches.</div>
+    </header>
+
+    <main>
+      <section class="arcade" aria-labelledby="title">
+        <div class="intro">
+          <div>
+            <p class="eyebrow">Pick a game · Pick a rival</p>
+            <h1 id="title">Your move.</h1>
+          </div>
+          <p class="intro-note">Six quick ways to settle it.</p>
+        </div>
+
+        <nav class="game-grid" aria-label="Choose a game">
+          <a class="game-link" href="xo.html">
+            <span class="game-icon icon-xo" aria-hidden="true">X/O</span>
+            <span class="game-copy"><span class="game-number">01 · Classic</span><h2 class="game-title">XO Club</h2><p class="game-description">Three in a row. No excuses.</p></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="game-link" href="connect-four.html">
+            <span class="game-icon icon-four" aria-hidden="true">4+</span>
+            <span class="game-copy"><span class="game-number">02 · Strategy</span><h2 class="game-title">Four in a Row</h2><p class="game-description">Drop discs. Block their line.</p></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="game-link" href="party-games.html?game=rps">
+            <span class="game-icon icon-rps" aria-hidden="true">✊</span>
+            <span class="game-copy"><span class="game-number">03 · Quick</span><h2 class="game-title">Rock, Paper, Scissors</h2><p class="game-description">Best of five. Choose wisely.</p></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="game-link" href="party-games.html?game=nim">
+            <span class="game-icon icon-nim" aria-hidden="true">|||</span>
+            <span class="game-copy"><span class="game-number">04 · Tactics</span><h2 class="game-title">Last One</h2><p class="game-description">Take 1, 2, or 3. Don't get caught.</p></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="game-link" href="party-games.html?game=memory">
+            <span class="game-icon icon-memory" aria-hidden="true">M</span>
+            <span class="game-copy"><span class="game-number">05 · Memory</span><h2 class="game-title">Match Up</h2><p class="game-description">Find pairs. Keep your streak.</p></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="game-link" href="party-games.html?game=dots">
+            <span class="game-icon icon-dots" aria-hidden="true">D+B</span>
+            <span class="game-copy"><span class="game-number">06 · Territory</span><h2 class="game-title">Dots &amp; Boxes</h2><p class="game-description">Draw a line. Claim a square.</p></span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </nav>
+      </section>
+    </main>
+
+    <footer><span>Made for friendly rivalries.</span><span class="footer-mark">2 PLAYERS</span></footer>
+  </div>
+</body>
+</html><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f1e8">
+  <title>XO Club - Tic-Tac-Toe</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f5f1e8;
+      --ink: #242722;
+      --muted: #75776d;
+      --line: #dcd8cd;
+      --coral: #ee7058;
+      --teal: #277d72;
+      --lime: #d8ef78;
+      --white: #fffdf8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background-color: var(--paper);
+      background-image: radial-gradient(#d9d4c8 0.7px, transparent 0.7px);
+      background-size: 17px 17px;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    button { font: inherit; }
+
+    .page {
+      display: grid;
+      min-height: 100vh;
+      grid-template-rows: auto 1fr auto;
+      padding: 0 7vw;
+    }
+
+    header, footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 76px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      font-size: 12px;
+    }
+
+    .top-note, footer { color: var(--muted); font-size: 12px; }
+    .top-note { text-transform: uppercase; letter-spacing: 1.3px; }
+
+    main {
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      padding: 26px 0 38px;
+    }
+
+    .game { width: min(100%, 440px); }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--teal);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(38px, 8vw, 58px);
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .subtitle {
+      margin: 12px 0 27px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .scoreboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      margin-bottom: 17px;
+      border-block: 1px solid var(--line);
+    }
+
+    .score {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 61px;
+    }
+
+    .score + .score { border-left: 1px solid var(--line); }
+    .score-name { color: var(--muted); font-size: 12px; }
+    .score-value { font-size: 19px; font-weight: 900; }
+    .score-x .score-value { color: var(--coral); }
+    .score-o .score-value { color: var(--teal); }
+    .score-draw .score-value { color: var(--ink); }
+
+    .turn-bar {
+      display: flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .turn-mark { font-size: 21px; font-weight: 900; }
+    .turn-mark.x { color: var(--coral); }
+    .turn-mark.o { color: var(--teal); }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      aspect-ratio: 1;
+    }
+
+    .cell {
+      display: grid;
+      min-width: 0;
+      aspect-ratio: 1;
+      place-items: center;
+      padding: 0;
+      border: 1px solid #e6e1d5;
+      border-radius: 8px;
+      background: var(--white);
+      box-shadow: 0 2px 0 rgba(36, 39, 34, 0.05);
+      cursor: pointer;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(48px, 15vw, 82px);
+      font-weight: 700;
+      line-height: 1;
+      transition: transform 130ms ease, background-color 130ms ease, box-shadow 130ms ease;
+    }
+
+    .cell:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 0 rgba(36, 39, 34, 0.08);
+    }
+
+    .cell:focus-visible, .action:focus-visible {
+      outline: 3px solid var(--teal);
+      outline-offset: 3px;
+    }
+
+    .cell.x { color: var(--coral); }
+    .cell.o { color: var(--teal); }
+    .cell.winner { background: var(--lime); border-color: var(--lime); }
+    .cell:disabled { cursor: default; }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 19px;
+    }
+
+    .invite-panel {
+      margin: 0 0 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(255, 253, 248, 0.76);
+      text-align: center;
+    }
+
+    .connection-status { margin: 0 0 10px; color: var(--muted); font-size: 12px; }
+    .invite-actions { display: flex; justify-content: center; gap: 8px; }
+
+    .invite-url {
+      width: 100%;
+      margin-top: 10px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--white);
+      color: var(--ink);
+      font: 12px monospace;
+    }
+
+    .action {
+      min-height: 41px;
+      padding: 0 15px;
+      border: 1px solid var(--ink);
+      border-radius: 5px;
+      background: var(--ink);
+      color: var(--white);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+      transition: background-color 130ms ease, color 130ms ease;
+    }
+
+    .action:hover { background: transparent; color: var(--ink); }
+    .action.secondary { background: transparent; color: var(--ink); }
+    .action.secondary:hover { background: var(--ink); color: var(--white); }
+
+    footer { min-height: 58px; border-top: 1px solid var(--line); }
+    .footer-mark { color: var(--ink); font-weight: 800; }
+
+    @media (max-width: 480px) {
+      .page { padding-inline: 20px; }
+      header { min-height: 62px; }
+      .top-note { font-size: 10px; }
+      main { padding-block: 16px 28px; }
+      .subtitle { margin-bottom: 20px; }
+      .score { gap: 6px; }
+      .score-name { font-size: 11px; }
+      .board { gap: 7px; }
+      footer { min-height: 48px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">XO</span> Side by side</div>
+      <div class="top-note">The classic, rematched</div>
+    </header>
+
+    <main>
+      <section class="game" aria-labelledby="title">
+        <p class="eyebrow">Two players · One board</p>
+        <h1 id="title">XO Club</h1>
+        <p class="subtitle">Make a match, then send your friend the invite.</p>
+
+        <div class="invite-panel">
+          <p class="connection-status" id="connection-status" role="status" aria-live="polite">Playing on this device</p>
+          <div class="invite-actions">
+            <button class="action" id="invite-friend" type="button">Invite a friend</button>
+            <button class="action secondary" id="copy-invite" type="button" hidden>Copy invite link</button>
+          </div>
+          <input class="invite-url" id="invite-url" type="url" readonly aria-label="Invite link" hidden>
+        </div>
+
+        <div class="scoreboard" aria-label="Score">
+          <div class="score score-x"><span class="score-name">Player X</span><span class="score-value" id="score-x">0</span></div>
+          <div class="score score-draw"><span class="score-name">Draws</span><span class="score-value" id="score-draw">0</span></div>
+          <div class="score score-o"><span class="score-name">Player O</span><span class="score-value" id="score-o">0</span></div>
+        </div>
+
+        <div class="turn-bar" id="status" aria-live="polite"><span class="turn-mark x">X</span><span>to play</span></div>
+        <div class="board" id="board" role="group" aria-label="Tic-tac-toe board">
+          <button class="cell" type="button" data-cell="0" aria-label="Top left, empty"></button>
+          <button class="cell" type="button" data-cell="1" aria-label="Top middle, empty"></button>
+          <button class="cell" type="button" data-cell="2" aria-label="Top right, empty"></button>
+          <button class="cell" type="button" data-cell="3" aria-label="Middle left, empty"></button>
+          <button class="cell" type="button" data-cell="4" aria-label="Center, empty"></button>
+          <button class="cell" type="button" data-cell="5" aria-label="Middle right, empty"></button>
+          <button class="cell" type="button" data-cell="6" aria-label="Bottom left, empty"></button>
+          <button class="cell" type="button" data-cell="7" aria-label="Bottom middle, empty"></button>
+          <button class="cell" type="button" data-cell="8" aria-label="Bottom right, empty"></button>
+        </div>
+
+        <div class="actions">
+          <button class="action" id="new-round" type="button">New round</button>
+          <button class="action secondary" id="reset-score" type="button">Reset score</button>
+        </div>
+      </section>
+    </main>
+
+    <footer><span>Pass the turn, keep the bragging rights.</span><span class="footer-mark">X / O</span></footer>
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script>
+    const cells = Array.from(document.querySelectorAll("[data-cell]"));
+    const status = document.querySelector("#status");
+    const scores = { X: 0, O: 0, draws: 0 };
+    const lines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+    let board = Array(9).fill("");
+    let currentPlayer = "X";
+    let roundOver = false;
+    let winningLine = [];
+    let result = "";
+    let peer = null;
+    let connection = null;
+    let remoteMode = false;
+    let connected = false;
+    let playerRole = "X";
+
+    const connectionStatus = document.querySelector("#connection-status");
+    const inviteButton = document.querySelector("#invite-friend");
+    const copyButton = document.querySelector("#copy-invite");
+    const inviteUrl = document.querySelector("#invite-url");
+    const positions = ["Top left", "Top middle", "Top right", "Middle left", "Center", "Middle right", "Bottom left", "Bottom middle", "Bottom right"];
+
+    function renderStatus(message, player = currentPlayer) {
+      if (remoteMode && !roundOver) {
+        if (playerRole === "O" && !connected) message = "Connecting to your friend...";
+        else if (connected && playerRole === currentPlayer) message = "your turn";
+        else if (connected) message = `waiting for ${currentPlayer}`;
+        else message = "Waiting for your friend";
+      }
+      if (result === "draw") {
+        message = "it's a draw";
+        player = null;
+      } else if (result) {
+        message = "wins this round!";
+        player = result;
+      }
+      const mark = player ? `<span class="turn-mark ${player.toLowerCase()}">${player}</span>` : "";
+      status.innerHTML = `${mark}<span>${message}</span>`;
+    }
+
+    function renderScores() {
+      document.querySelector("#score-x").textContent = scores.X;
+      document.querySelector("#score-o").textContent = scores.O;
+      document.querySelector("#score-draw").textContent = scores.draws;
+    }
+
+    function startRound() {
+      board = Array(9).fill("");
+      currentPlayer = "X";
+      roundOver = false;
+      winningLine = [];
+      result = "";
+      cells.forEach((cell) => {
+        cell.textContent = "";
+        cell.className = "cell";
+        cell.setAttribute("aria-label", `${positions[Number(cell.dataset.cell)]}, empty`);
+      });
+      renderBoard();
+      renderStatus("to play");
+    }
+
+    function applyMove(index) {
+      if (roundOver || board[index]) return;
+      board[index] = currentPlayer;
+      const completedLine = lines.find((line) => line.every((position) => board[position] === currentPlayer));
+      if (completedLine) {
+        roundOver = true;
+        winningLine = completedLine;
+        result = currentPlayer;
+        scores[currentPlayer] += 1;
+      } else if (board.every(Boolean)) {
+        roundOver = true;
+        result = "draw";
+        scores.draws += 1;
+      } else {
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+      }
+
+      render();
+      if (remoteMode && playerRole === "X") sendState();
+    }
+
+    function renderBoard() {
+      cells.forEach((cell, index) => {
+        const mark = board[index];
+        cell.textContent = mark;
+        cell.className = `cell${mark ? ` ${mark.toLowerCase()}` : ""}${winningLine.includes(index) ? " winner" : ""}`;
+        cell.disabled = Boolean(mark) || roundOver || (remoteMode && (playerRole !== currentPlayer || (playerRole === "O" && !connected)));
+        cell.setAttribute("aria-label", `${positions[index]}, ${mark || "empty"}`);
+      });
+    }
+
+    function render() {
+      renderBoard();
+      renderScores();
+      renderStatus("to play");
+    }
+
+    function sendState() {
+      if (!connection || !connected || playerRole !== "X") return;
+      connection.send({ type: "state", board, currentPlayer, scores, roundOver, winningLine, result });
+    }
+
+    function updateConnection(message) {
+      connectionStatus.textContent = message;
+      renderBoard();
+      renderStatus("to play");
+    }
+
+    function handleMessage(message) {
+      if (!message || typeof message !== "object") return;
+      if (playerRole === "X") {
+        if (message.type === "move" && Number.isInteger(message.index) && currentPlayer === "O" && message.index >= 0 && message.index < 9 && !board[message.index]) {
+          applyMove(message.index);
+        } else if (message.type === "new-round") {
+          startRound();
+          sendState();
+        } else if (message.type === "reset-score") {
+          scores.X = 0;
+          scores.O = 0;
+          scores.draws = 0;
+          startRound();
+          sendState();
+        }
+        return;
+      }
+      if (message.type !== "state" || !Array.isArray(message.board) || message.board.length !== 9) return;
+      board = message.board;
+      currentPlayer = message.currentPlayer;
+      scores.X = message.scores.X;
+      scores.O = message.scores.O;
+      scores.draws = message.scores.draws;
+      roundOver = message.roundOver;
+      winningLine = message.winningLine;
+      result = message.result;
+      render();
+    }
+
+    function connectToPeer(conn) {
+      connection = conn;
+      connection.on("open", () => {
+        connected = true;
+        updateConnection("Connected · you are Player O");
+        if (playerRole === "O") connection.send({ type: "join" });
+        else sendState();
+      });
+      connection.on("data", handleMessage);
+      connection.on("close", () => {
+        connected = false;
+        updateConnection("Your friend disconnected");
+      });
+      connection.on("error", () => updateConnection("Connection interrupted. Try the invite again."));
+    }
+
+    function showPeerError(error) {
+      connectionStatus.textContent = error.type === "peer-unavailable"
+        ? "Invite not found. Ask your friend to create a new one."
+        : "Could not connect. Check your internet and try again.";
+      inviteButton.disabled = false;
+    }
+
+    function startInvite() {
+      if (!window.Peer) {
+        connectionStatus.textContent = "Could not load online play. Check your internet and reload.";
+        return;
+      }
+      if (location.protocol !== "https:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+        connectionStatus.textContent = "Online invites need this game hosted on an HTTPS website.";
+        return;
+      }
+
+      remoteMode = true;
+      playerRole = "X";
+      connected = false;
+      scores.X = 0;
+      scores.O = 0;
+      scores.draws = 0;
+      startRound();
+      inviteButton.disabled = true;
+      connectionStatus.textContent = "Creating your invite...";
+      peer = new Peer();
+      peer.on("open", (id) => {
+        const url = new URL(location.href);
+        url.hash = `room=${encodeURIComponent(id)}`;
+        inviteUrl.value = url.toString();
+        inviteUrl.hidden = false;
+        copyButton.hidden = false;
+        connectionStatus.textContent = "Invite ready · you are Player X · waiting for your friend";
+        renderStatus("to play");
+      });
+      peer.on("connection", (conn) => {
+        if (connection) {
+          conn.close();
+          return;
+        }
+        connectToPeer(conn);
+      });
+      peer.on("error", showPeerError);
+    }
+
+    function joinInvite(roomId) {
+      if (!window.Peer) {
+        connectionStatus.textContent = "Could not load online play. Check your internet and reload.";
+        return;
+      }
+      remoteMode = true;
+      playerRole = "O";
+      inviteButton.hidden = true;
+      connectionStatus.textContent = "Connecting to your friend...";
+      peer = new Peer();
+      peer.on("open", () => connectToPeer(peer.connect(roomId, { reliable: true })));
+      peer.on("error", showPeerError);
+    }
+
+    function play(index) {
+      if (roundOver || board[index] || (remoteMode && playerRole !== currentPlayer)) return;
+      if (remoteMode && playerRole === "O") {
+        if (connected) connection.send({ type: "move", index });
+        return;
+      }
+      applyMove(index);
+    }
+
+    function requestRoundAction(type) {
+      if (remoteMode && playerRole === "O") {
+        if (connected) connection.send({ type });
+        return;
+      }
+      if (type === "new-round") startRound();
+      if (type === "reset-score") {
+        scores.X = 0;
+        scores.O = 0;
+        scores.draws = 0;
+        startRound();
+      }
+      if (remoteMode) sendState();
+    }
+
+    cells.forEach((cell, index) => cell.addEventListener("click", () => play(index)));
+    document.querySelector("#new-round").addEventListener("click", () => requestRoundAction("new-round"));
+    document.querySelector("#reset-score").addEventListener("click", () => requestRoundAction("reset-score"));
+    inviteButton.addEventListener("click", startInvite);
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(inviteUrl.value);
+        copyButton.textContent = "Copied!";
+      } catch {
+        inviteUrl.hidden = false;
+        inviteUrl.select();
+        connectionStatus.textContent = "Copy the invite link above and send it to your friend.";
+      }
+    });
+
+    startRound();
+    const roomId = new URLSearchParams(location.hash.slice(1)).get("room");
+    if (roomId) joinInvite(roomId);
+  </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f1e8">
+  <title>Playside Games</title>
+  <link rel="stylesheet" href="party-games.css">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <a href="index.html">&larr; Playside Arcade</a>
+      <span class="brand">Two players · Your call</span>
+    </header>
+
+    <main>
+      <section class="game-shell" aria-labelledby="game-title">
+        <p class="eyebrow" id="game-category"></p>
+        <h1 id="game-title"></h1>
+        <p class="subtitle" id="game-subtitle"></p>
+
+        <div class="invite-panel">
+          <p class="connection-status" id="connection-status" role="status" aria-live="polite">Playing on this device</p>
+          <div class="invite-actions">
+            <button class="action" id="invite-friend" type="button">Invite a friend</button>
+            <button class="action secondary" id="copy-invite" type="button" hidden>Copy invite link</button>
+          </div>
+          <input class="invite-url" id="invite-url" type="url" readonly aria-label="Invite link" hidden>
+        </div>
+
+        <div class="scoreboard" id="scoreboard" aria-label="Score"></div>
+        <div class="turn-bar" id="status" aria-live="polite"></div>
+        <div class="game-stage" id="game-stage"></div>
+        <div class="actions" id="round-actions">
+          <button class="action" id="new-round" type="button">New round</button>
+          <button class="action secondary" id="reset-score" type="button">Reset score</button>
+        </div>
+      </section>
+    </main>
+
+    <footer><span>Good games. Better rematches.</span><span class="footer-mark"><a href="index.html">BACK TO ARCADE</a></span></footer>
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="online.js"></script>
+  <script src="party-games.js"></script>
+</body>
+</html>

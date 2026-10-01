@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f1e7">
+  <title>Four in a Row - Connect Four</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f4f1e7;
+      --ink: #252922;
+      --muted: #70766b;
+      --line: #d8d7cb;
+      --board: #187e69;
+      --board-shadow: #0d5d50;
+      --gold: #f3c94e;
+      --coral: #ef705b;
+      --white: #fffdf7;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background-color: var(--paper);
+      background-image: radial-gradient(#d6d3c6 0.7px, transparent 0.7px);
+      background-size: 17px 17px;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    button { font: inherit; }
+
+    .page {
+      display: grid;
+      min-height: 100vh;
+      grid-template-rows: auto 1fr auto;
+      padding: 0 6vw;
+    }
+
+    header, footer {
+      display: flex;
+      min-height: 68px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header a {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
+    }
+
+    .brand {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+
+    main {
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      padding: 22px 0 28px;
+    }
+
+    .game { width: min(100%, 700px); }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--board);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(38px, 8vw, 58px);
+      line-height: 1;
+      text-align: center;
+    }
+
+    .subtitle {
+      margin: 11px 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .invite-panel {
+      margin: 0 0 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, 0.8);
+      text-align: center;
+    }
+
+    .connection-status { margin: 0 0 9px; color: var(--muted); font-size: 12px; }
+    .invite-actions, .actions { display: flex; justify-content: center; gap: 9px; }
+
+    .action {
+      min-height: 39px;
+      padding: 0 14px;
+      border: 1px solid var(--ink);
+      border-radius: 5px;
+      background: var(--ink);
+      color: var(--white);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .action.secondary { background: transparent; color: var(--ink); }
+    .action:disabled { cursor: wait; opacity: 0.55; }
+    .action:focus-visible, .drop-column:focus-visible, header a:focus-visible {
+      outline: 3px solid var(--coral);
+      outline-offset: 3px;
+    }
+
+    .invite-url {
+      width: min(100%, 540px);
+      margin-top: 9px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--white);
+      color: var(--ink);
+      font: 12px monospace;
+    }
+
+    .scoreboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: 8px;
+      border-block: 1px solid var(--line);
+    }
+
+    .score {
+      display: flex;
+      min-height: 50px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+    }
+
+    .score + .score { border-left: 1px solid var(--line); }
+    .score-name { color: var(--muted); font-size: 12px; }
+    .score-value { font-size: 19px; font-weight: 900; }
+    .score-x .score-value { color: #a47c00; }
+    .score-o .score-value { color: #d34e3b; }
+
+    .turn-bar {
+      display: flex;
+      min-height: 43px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .turn-mark { font-size: 20px; }
+    .turn-mark.x { color: #a47c00; }
+    .turn-mark.o { color: #d34e3b; }
+
+    .drop-controls, .board {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      width: 100%;
+    }
+
+    .drop-controls { gap: clamp(3px, 1vw, 9px); margin-bottom: 6px; }
+
+    .drop-column {
+      min-width: 0;
+      aspect-ratio: 1.2;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: clamp(17px, 4vw, 24px);
+      font-weight: 900;
+      transition: color 120ms ease, transform 120ms ease;
+    }
+
+    .drop-column:not(:disabled):hover { transform: translateY(2px); color: var(--ink); }
+    .drop-column:disabled { cursor: default; opacity: 0.3; }
+
+    .board {
+      aspect-ratio: 7 / 6;
+      gap: clamp(3px, 1vw, 9px);
+      padding: clamp(8px, 1.8vw, 14px);
+      border-radius: 10px;
+      background: var(--board);
+      box-shadow: 0 7px 0 var(--board-shadow), 0 12px 18px rgba(37, 41, 34, 0.12);
+    }
+
+    .slot {
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--paper);
+      box-shadow: inset 0 3px 5px rgba(37, 41, 34, 0.13);
+    }
+
+    .slot.x, .slot.o { background: transparent; box-shadow: none; }
+    .slot.x::after, .slot.o::after {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      content: "";
+      animation: drop-in 150ms ease-out both;
+    }
+
+    .slot.x::after { background: var(--gold); box-shadow: inset 0 -4px 0 rgba(164, 124, 0, 0.2); }
+    .slot.o::after { background: var(--coral); box-shadow: inset 0 -4px 0 rgba(150, 48, 34, 0.19); }
+    .slot.winner::after { outline: 3px solid var(--white); outline-offset: -5px; }
+
+    @keyframes drop-in {
+      from { transform: scale(0.65); }
+      to { transform: scale(1); }
+    }
+
+    .actions { margin-top: 20px; }
+    footer { min-height: 50px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+
+    @media (max-width: 520px) {
+      .page { padding-inline: 16px; }
+      header { min-height: 56px; }
+      main { padding: 12px 0 24px; }
+      .subtitle { margin-bottom: 14px; }
+      .invite-panel { padding: 10px 8px; }
+      .drop-controls { margin-bottom: 4px; }
+      .board { box-shadow: 0 5px 0 var(--board-shadow), 0 9px 14px rgba(37, 41, 34, 0.12); }
+      .actions { margin-top: 15px; }
+      footer { min-height: 42px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <a href="index.html">&larr; XO Club</a>
+      <span class="brand">A little friendly competition</span>
+    </header>
+
+    <main>
+      <section class="game" aria-labelledby="title">
+        <p class="eyebrow">Two players · Take turns</p>
+        <h1 id="title">Four in a Row</h1>
+        <p class="subtitle">Drop four discs in a line to win.</p>
+
+        <div class="invite-panel">
+          <p class="connection-status" id="connection-status" role="status" aria-live="polite">Playing on this device</p>
+          <div class="invite-actions">
+            <button class="action" id="invite-friend" type="button">Invite a friend</button>
+            <button class="action secondary" id="copy-invite" type="button" hidden>Copy invite link</button>
+          </div>
+          <input class="invite-url" id="invite-url" type="url" readonly aria-label="Invite link" hidden>
+        </div>
+
+        <div class="scoreboard" aria-label="Score">
+          <div class="score score-x"><span class="score-name">Player 1 · Gold</span><span class="score-value" id="score-x">0</span></div>
+          <div class="score score-o"><span class="score-name">Player 2 · Coral</span><span class="score-value" id="score-o">0</span></div>
+        </div>
+
+        <div class="turn-bar" id="status" aria-live="polite"><span class="turn-mark x">●</span><span>Gold to play</span></div>
+        <div class="drop-controls" id="drop-controls" aria-label="Choose a column">
+          <button class="drop-column" type="button" data-column="0" aria-label="Drop in column 1">↓</button>
+          <button class="drop-column" type="button" data-column="1" aria-label="Drop in column 2">↓</button>
+          <button class="drop-column" type="button" data-column="2" aria-label="Drop in column 3">↓</button>
+          <button class="drop-column" type="button" data-column="3" aria-label="Drop in column 4">↓</button>
+          <button class="drop-column" type="button" data-column="4" aria-label="Drop in column 5">↓</button>
+          <button class="drop-column" type="button" data-column="5" aria-label="Drop in column 6">↓</button>
+          <button class="drop-column" type="button" data-column="6" aria-label="Drop in column 7">↓</button>
+        </div>
+        <div class="board" id="board" role="grid" aria-label="Connect Four board, six rows by seven columns"></div>
+
+        <div class="actions">
+          <button class="action" id="new-round" type="button">New round</button>
+          <button class="action secondary" id="reset-score" type="button">Reset score</button>
+        </div>
+      </section>
+    </main>
+
+    <footer><span>Gold starts each round.</span><span>Four together wins.</span></footer>
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script>
+    const ROWS = 6;
+    const COLUMNS = 7;
+    const boardElement = document.querySelector("#board");
+    const statusElement = document.querySelector("#status");
+    const connectionStatus = document.querySelector("#connection-status");
+    const inviteButton = document.querySelector("#invite-friend");
+    const copyButton = document.querySelector("#copy-invite");
+    const inviteUrl = document.querySelector("#invite-url");
+    const dropButtons = Array.from(document.querySelectorAll("[data-column]"));
+    const slots = [];
+    const scores = { X: 0, O: 0 };
+    let board = Array(ROWS * COLUMNS).fill("");
+    let currentPlayer = "X";
+    let winningLine = [];
+    let result = "";
+    let roundOver = false;
+    let remoteMode = false;
+    let playerRole = "X";
+    let connected = false;
+    let peer = null;
+    let connection = null;
+
+    for (let index = 0; index < ROWS * COLUMNS; index += 1) {
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      slot.setAttribute("role", "gridcell");
+      boardElement.append(slot);
+      slots.push(slot);
+    }
+
+    function renderStatus() {
+      let message = "Gold to play";
+      let player = "X";
+      if (currentPlayer === "O") {
+        message = "Coral to play";
+        player = "O";
+      }
+      if (remoteMode && !roundOver) {
+        if (playerRole === "O" && !connected) message = "Connecting to your friend...";
+        else if (!connected) message = "Waiting for your friend";
+        else if (playerRole === currentPlayer) message = "your turn";
+        else message = `waiting for ${currentPlayer === "X" ? "Gold" : "Coral"}`;
+      }
+      if (result === "X") { message = "Gold wins this round!"; player = "X"; }
+      if (result === "O") { message = "Coral wins this round!"; player = "O"; }
+      if (result === "draw") { message = "It's a draw!"; player = ""; }
+      const mark = player ? `<span class="turn-mark ${player.toLowerCase()}">●</span>` : "";
+      statusElement.innerHTML = `${mark}<span>${message}</span>`;
+    }
+
+    function renderScores() {
+      document.querySelector("#score-x").textContent = scores.X;
+      document.querySelector("#score-o").textContent = scores.O;
+    }
+
+    function renderBoard() {
+      slots.forEach((slot, index) => {
+        const mark = board[index];
+        const row = Math.floor(index / COLUMNS) + 1;
+        const column = (index % COLUMNS) + 1;
+        slot.className = `slot${mark ? ` ${mark.toLowerCase()}` : ""}${winningLine.includes(index) ? " winner" : ""}`;
+        slot.setAttribute("aria-label", `Row ${row}, column ${column}: ${mark === "X" ? "gold" : mark === "O" ? "coral" : "empty"}`);
+      });
+
+      dropButtons.forEach((button) => {
+        const column = Number(button.dataset.column);
+        const columnFull = board[column] !== "";
+        const notYourTurn = remoteMode && (playerRole !== currentPlayer || (playerRole === "O" && !connected));
+        button.disabled = roundOver || columnFull || notYourTurn;
+      });
+    }
+
+    function render() {
+      renderBoard();
+      renderScores();
+      renderStatus();
+    }
+
+    function startRound() {
+      board = Array(ROWS * COLUMNS).fill("");
+      currentPlayer = "X";
+      winningLine = [];
+      result = "";
+      roundOver = false;
+      render();
+    }
+
+    function collectLine(row, column, rowStep, columnStep, player) {
+      const line = [row * COLUMNS + column];
+      for (const direction of [-1, 1]) {
+        let nextRow = row + rowStep * direction;
+        let nextColumn = column + columnStep * direction;
+        while (nextRow >= 0 && nextRow < ROWS && nextColumn >= 0 && nextColumn < COLUMNS && board[nextRow * COLUMNS + nextColumn] === player) {
+          line.push(nextRow * COLUMNS + nextColumn);
+          nextRow += rowStep * direction;
+          nextColumn += columnStep * direction;
+        }
+      }
+      return line;
+    }
+
+    function applyMove(column) {
+      if (roundOver || column < 0 || column >= COLUMNS) return;
+      let row = ROWS - 1;
+      while (row >= 0 && board[row * COLUMNS + column] !== "") row -= 1;
+      if (row < 0) return;
+
+      board[row * COLUMNS + column] = currentPlayer;
+      const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+      const completedLine = directions
+        .map(([rowStep, columnStep]) => collectLine(row, column, rowStep, columnStep, currentPlayer))
+        .find((line) => line.length >= 4);
+
+      if (completedLine) {
+        roundOver = true;
+        winningLine = completedLine;
+        result = currentPlayer;
+        scores[currentPlayer] += 1;
+      } else if (board.every(Boolean)) {
+        roundOver = true;
+        result = "draw";
+      } else {
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+      }
+
+      render();
+      if (remoteMode && playerRole === "X") sendState();
+    }
+
+    function sendState() {
+      if (connection && connected && playerRole === "X") {
+        connection.send({ type: "state", board, currentPlayer, scores, winningLine, result, roundOver });
+      }
+    }
+
+    function handleMessage(message) {
+      if (!message || typeof message !== "object") return;
+      if (playerRole === "X") {
+        if (message.type === "move" && Number.isInteger(message.column) && currentPlayer === "O") applyMove(message.column);
+        if (message.type === "new-round") { startRound(); sendState(); }
+        if (message.type === "reset-score") {
+          scores.X = 0;
+          scores.O = 0;
+          startRound();
+          sendState();
+        }
+        return;
+      }
+
+      if (message.type !== "state" || !Array.isArray(message.board) || message.board.length !== ROWS * COLUMNS) return;
+      if (!message.board.every((cell) => cell === "" || cell === "X" || cell === "O")) return;
+      board = message.board;
+      currentPlayer = message.currentPlayer === "O" ? "O" : "X";
+      scores.X = Number(message.scores.X) || 0;
+      scores.O = Number(message.scores.O) || 0;
+      winningLine = Array.isArray(message.winningLine) ? message.winningLine : [];
+      result = message.result || "";
+      roundOver = Boolean(message.roundOver);
+      render();
+    }
+
+    function updateConnection(message) {
+      connectionStatus.textContent = message;
+      render();
+    }
+
+    function connectToPeer(conn) {
+      connection = conn;
+      connection.on("open", () => {
+        connected = true;
+        connectionStatus.textContent = `Connected · you are Player ${playerRole}`;
+        if (playerRole === "O") connection.send({ type: "join" });
+        else sendState();
+        render();
+      });
+      connection.on("data", handleMessage);
+      connection.on("close", () => {
+        connected = false;
+        updateConnection("Your friend disconnected");
+      });
+      connection.on("error", () => updateConnection("Connection interrupted. Try the invite again."));
+    }
+
+    function showPeerError(error) {
+      connectionStatus.textContent = error.type === "peer-unavailable"
+        ? "Invite not found. Ask your friend to create a new one."
+        : "Could not connect. Check your internet and try again.";
+      inviteButton.disabled = false;
+    }
+
+    function startInvite() {
+      if (!window.Peer) {
+        connectionStatus.textContent = "Could not load online play. Check your internet and reload.";
+        return;
+      }
+      if (location.protocol !== "https:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+        connectionStatus.textContent = "Online invites need this game hosted on an HTTPS website.";
+        return;
+      }
+
+      remoteMode = true;
+      playerRole = "X";
+      connected = false;
+      scores.X = 0;
+      scores.O = 0;
+      startRound();
+      inviteButton.disabled = true;
+      connectionStatus.textContent = "Creating your invite...";
+      peer = new Peer();
+      peer.on("open", (id) => {
+        const url = new URL(location.href);
+        url.hash = `room=${encodeURIComponent(id)}`;
+        inviteUrl.value = url.toString();
+        inviteUrl.hidden = false;
+        copyButton.hidden = false;
+        connectionStatus.textContent = "Invite ready · you are Player X · waiting for your friend";
+        render();
+      });
+      peer.on("connection", (conn) => {
+        if (connection) { conn.close(); return; }
+        connectToPeer(conn);
+      });
+      peer.on("error", showPeerError);
+    }
+
+    function joinInvite(roomId) {
+      if (!window.Peer) {
+        connectionStatus.textContent = "Could not load online play. Check your internet and reload.";
+        return;
+      }
+      remoteMode = true;
+      playerRole = "O";
+      inviteButton.hidden = true;
+      connectionStatus.textContent = "Connecting to your friend...";
+      peer = new Peer();
+      peer.on("open", () => connectToPeer(peer.connect(roomId, { reliable: true })));
+      peer.on("error", showPeerError);
+      render();
+    }
+
+    function drop(column) {
+      if (roundOver || column < 0 || column >= COLUMNS) return;
+      if (remoteMode && playerRole !== currentPlayer) return;
+      if (remoteMode && playerRole === "O") {
+        if (connected) connection.send({ type: "move", column });
+        return;
+      }
+      applyMove(column);
+    }
+
+    function requestRoundAction(type) {
+      if (remoteMode && playerRole === "O") {
+        if (connected) connection.send({ type });
+        return;
+      }
+      if (type === "new-round") startRound();
+      if (type === "reset-score") {
+        scores.X = 0;
+        scores.O = 0;
+        startRound();
+      }
+      if (remoteMode) sendState();
+    }
+
+    dropButtons.forEach((button) => {
+      button.addEventListener("click", () => drop(Number(button.dataset.column)));
+    });
+    document.querySelector("#new-round").addEventListener("click", () => requestRoundAction("new-round"));
+    document.querySelector("#reset-score").addEventListener("click", () => requestRoundAction("reset-score"));
+    inviteButton.addEventListener("click", startInvite);
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(inviteUrl.value);
+        copyButton.textContent = "Copied!";
+      } catch {
+        inviteUrl.hidden = false;
+        inviteUrl.select();
+        connectionStatus.textContent = "Copy the invite link above and send it to your friend.";
+      }
+    });
+
+    startRound();
+    const roomId = new URLSearchParams(location.hash.slice(1)).get("room");
+    if (roomId) joinInvite(roomId);
+  </script>
+</body>
+</html>
