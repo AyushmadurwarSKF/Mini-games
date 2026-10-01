@@ -472,31 +472,88 @@
       connectionStatus.textContent = message;
       render();
     }
-
     function connectToPeer(conn) {
+
       connection = conn;
+
       connection.on("open", () => {
+
+        console.log("Connection established");
+
         connected = true;
-        connectionStatus.textContent = `Connected · you are Player ${playerRole}`;
-        if (playerRole === "O") connection.send({ type: "join" });
-        else sendState();
+
+        updateConnection(
+          `Connected · you are Player ${playerRole}`
+        );
+
+        if (playerRole === "O") {
+          connection.send({
+            type: "join"
+          });
+        } else {
+          sendState();
+        }
+
         render();
       });
-      connection.on("data", handleMessage);
-      connection.on("close", () => {
-        connected = false;
-        updateConnection("Your friend disconnected");
-      });
-      connection.on("error", () => updateConnection("Connection interrupted. Try the invite again."));
-    }
 
+      connection.on("data", (message) => {
+
+        console.log(
+          "Received:",
+          message
+        );
+
+        handleMessage(message);
+      });
+
+      connection.on("close", () => {
+
+        console.warn(
+          "Connection closed"
+        );
+
+        connected = false;
+
+        updateConnection(
+          "Your friend disconnected"
+        );
+      });
+
+      connection.on("error", (err) => {
+
+        console.error(
+          "Connection Error:",
+          err
+        );
+
+        updateConnection(
+          "Connection interrupted. Try the invite again."
+        );
+      });
+    }
     function showPeerError(error) {
-      connectionStatus.textContent = error.type === "peer-unavailable"
-        ? "Invite not found. Ask your friend to create a new one."
-        : "Could not connect. Check your internet and try again.";
+      console.error("Peer Error:", error);
+      switch (error.type) {
+        case "peer-unavailable":
+          connectionStatus.textContent =
+            "Invite not found. Ask your friend to create a new one.";
+          break;
+        case "network":
+          connectionStatus.textContent =
+            "Network issue detected.";
+          break;
+        case "server-error":
+          connectionStatus.textContent =
+            "PeerJS server issue.";
+          break;
+        default:
+          connectionStatus.textContent =
+            "Connection failed: " +
+            (error.type || "Unknown Error");
+      }
       inviteButton.disabled = false;
     }
-
     function startInvite() {
       if (!window.Peer) {
         connectionStatus.textContent = "Could not load online play. Check your internet and reload.";
@@ -506,7 +563,6 @@
         connectionStatus.textContent = "Online invites need this game hosted on an HTTPS website.";
         return;
       }
-
       remoteMode = true;
       playerRole = "X";
       connected = false;
@@ -515,7 +571,30 @@
       startRound();
       inviteButton.disabled = true;
       connectionStatus.textContent = "Creating your invite...";
-      peer = new Peer();
+      peer = new Peer({
+        debug: 3,
+        config: {
+          iceServers: [
+            {
+              urls: "stun:stun.l.google.com:19302"
+            },
+            {
+              urls: "stun:global.stun.twilio.com:3478"
+            }
+          ]
+        }
+      });
+      peer.on("error", (err) => {
+        console.error("PeerJS Error:", err);
+      });
+
+      peer.on("disconnected", () => {
+        console.warn("Peer disconnected");
+      });
+
+      peer.on("close", () => {
+        console.warn("Peer closed");
+      });
       peer.on("open", (id) => {
         const url = new URL(location.href);
         url.hash = `room=${encodeURIComponent(id)}`;
@@ -541,8 +620,56 @@
       playerRole = "O";
       inviteButton.hidden = true;
       connectionStatus.textContent = "Connecting to your friend...";
-      peer = new Peer();
-      peer.on("open", () => connectToPeer(peer.connect(roomId, { reliable: true })));
+      peer = new Peer({
+        debug: 3,
+        config: {
+          iceServers: [
+            {
+              urls: "stun:stun.l.google.com:19302"
+            },
+            {
+              urls: "stun:global.stun.twilio.com:3478"
+            }
+          ]
+        }
+      });
+
+      peer.on("error", (err) => {
+        console.error("PeerJS Error:", err);
+      });
+
+      peer.on("disconnected", () => {
+        console.warn("Peer disconnected");
+      });
+
+      peer.on("close", () => {
+        console.warn("Peer closed");
+      });
+
+      peer.on("open", () => {
+
+        console.log("My Peer ID:", peer.id);
+        console.log("Joining Room:", roomId);
+
+        if (!roomId) {
+          connectionStatus.textContent = "Invalid invite link";
+          return;
+        }
+
+        const conn = peer.connect(roomId, {
+          reliable: true
+        });
+
+        conn.on("open", () => {
+          console.log("Connected to host");
+        });
+
+        conn.on("error", (err) => {
+          console.error("Connection Error:", err);
+        });
+
+        connectToPeer(conn);
+      });
       peer.on("error", showPeerError);
       render();
     }
